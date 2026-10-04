@@ -9,10 +9,12 @@ DeviceManager::DeviceManager(HttpClient& httpClient)
 }
 
 std::string DeviceManager::RegisterDevice(
+    const std::string& agentId,
     const std::string& hostname)
 {
     std::string body =
-        "{\"hostname\":\"" + hostname +
+        "{\"agentId\":\"" + agentId +
+        "\",\"hostname\":\"" + hostname +
         "\",\"os\":\"Windows\",\"osVersion\":\"11\"}";
 
     std::string response;

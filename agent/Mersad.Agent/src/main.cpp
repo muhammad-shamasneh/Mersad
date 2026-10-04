@@ -51,7 +51,7 @@ int main()
     DeviceManager deviceManager(httpClient);
 
     std::string deviceId =
-        deviceManager.RegisterDevice(hostname);
+        deviceManager.RegisterDevice(agentId, hostname);
 
     if (deviceId.empty())
     {
@@ -76,12 +76,9 @@ int main()
 
     TelemetryClient telemetryClient(httpClient);
 
-    for (const auto& process : processes)
-    {
-        telemetryClient.SendProcessEvent(
-            deviceId,
-            process);
-    }
+    telemetryClient.SendProcessBatch(
+        agentId,
+        processes);
 
     return 0;
 }

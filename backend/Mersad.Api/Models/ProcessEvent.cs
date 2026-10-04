@@ -6,5 +6,5 @@ public class ProcessEvent
     public Guid DeviceId { get; set; }
     public int ProcessId { get; set; }
     public string ProcessName { get; set; } = string.Empty;
-    public DateTime Timestamp { get; set; }
+    public DateTimeOffset Timestamp { get; set; }
 }
