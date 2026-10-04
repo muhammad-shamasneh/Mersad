@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\MuShamasneh\Desktop\Mersad\agent\Mersad.Agent\build\CMakeFiles\4149b9cf0e55d46b402f91f6a72fdea8\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{C83497D2-791F-3092-96BE-D11DF4F9AECF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
