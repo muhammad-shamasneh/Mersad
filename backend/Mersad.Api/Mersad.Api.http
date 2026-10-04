@@ -1,0 +1,6 @@
+@Mersad.Api_HostAddress = http://localhost:5121
+
+GET {{Mersad.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
