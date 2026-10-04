@@ -20,3 +20,5 @@
 
 # Logs
 *.log
+# Mersad agent runtime identity
+**/Mersad.AgentId

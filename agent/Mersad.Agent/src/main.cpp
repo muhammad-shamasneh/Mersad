@@ -2,6 +2,7 @@
 #include "HttpClient.h"
 #include "ProcessCollector.h"
 #include "TelemetryClient.h"
+#include "AgentIdentity.h"
 
 #include <iostream>
 #include <string>
@@ -30,6 +31,18 @@ int main()
     std::cout << "Hostname: "
               << hostname
               << std::endl;
+
+    AgentIdentity identity;
+
+    std::string agentId = identity.GetOrCreate();
+
+    if (agentId.empty())
+    {
+        std::cerr << "Failed to initialize AgentId." << std::endl;
+        return 1;
+    }
+
+    std::cout << "AgentId: " << agentId << std::endl;
 
     HttpClient httpClient(
         L"localhost",

@@ -12,6 +12,7 @@ add_executable(
     src/DeviceManager.cpp
     src/ProcessCollector.cpp
     src/TelemetryClient.cpp
+    src/AgentIdentity.cpp
 )
 
 target_include_directories(
