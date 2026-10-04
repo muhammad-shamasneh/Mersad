@@ -1,3 +1,0 @@
-C:/Users/MuShamasneh/Desktop/Mersad/agent/Mersad.Agent/build/CMakeFiles/Mersad.Agent.dir
-C:/Users/MuShamasneh/Desktop/Mersad/agent/Mersad.Agent/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/MuShamasneh/Desktop/Mersad/agent/Mersad.Agent/build/CMakeFiles/ZERO_CHECK.dir

@@ -1,0 +1,22 @@
+# CMake
+**/build/
+**/CMakeFiles/
+**/CMakeCache.txt
+**/cmake_install.cmake
+**/Makefile
+
+# Visual Studio
+.vs/
+**/*.suo
+**/*.user
+
+# .NET
+**/bin/
+**/obj/
+
+# Node
+**/node_modules/
+**/dist/
+
+# Logs
+*.log
