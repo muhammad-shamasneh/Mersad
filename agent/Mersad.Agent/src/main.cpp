@@ -7,6 +7,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 std::string GetHostname()
@@ -38,11 +40,15 @@ int main()
 
     if (agentId.empty())
     {
-        std::cerr << "Failed to initialize AgentId." << std::endl;
+        std::cerr << "Failed to initialize AgentId."
+                  << std::endl;
+
         return 1;
     }
 
-    std::cout << "AgentId: " << agentId << std::endl;
+    std::cout << "AgentId: "
+              << agentId
+              << std::endl;
 
     HttpClient httpClient(
         L"localhost",
@@ -51,7 +57,9 @@ int main()
     DeviceManager deviceManager(httpClient);
 
     std::string deviceId =
-        deviceManager.RegisterDevice(agentId, hostname);
+        deviceManager.RegisterDevice(
+            agentId,
+            hostname);
 
     if (deviceId.empty())
     {
@@ -74,11 +82,24 @@ int main()
               << processes.size()
               << std::endl;
 
+    NetworkCollector networkCollector;
+
+    std::vector<NetworkConnection> connections =
+        networkCollector.Collect();
+
+    std::cout << "Network connections found: "
+              << connections.size()
+              << std::endl;
+
     TelemetryClient telemetryClient(httpClient);
 
     telemetryClient.SendProcessBatch(
         agentId,
         processes);
+
+    telemetryClient.SendNetworkBatch(
+        agentId,
+        connections);
 
     return 0;
 }

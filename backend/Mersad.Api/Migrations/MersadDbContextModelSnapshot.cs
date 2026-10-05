@@ -54,6 +54,46 @@ namespace Mersad.Api.Migrations
                     b.ToTable("Devices");
                 });
 
+            modelBuilder.Entity("Mersad.Api.Models.NetworkEvent", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DeviceId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LocalAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("LocalPort")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProcessId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RemoteAddress")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("RemotePort")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DeviceId");
+
+                    b.ToTable("NetworkEvents");
+                });
+
             modelBuilder.Entity("Mersad.Api.Models.ProcessEvent", b =>
                 {
                     b.Property<Guid>("Id")
@@ -70,7 +110,7 @@ namespace Mersad.Api.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("Timestamp")
+                    b.Property<DateTimeOffset>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
@@ -78,6 +118,15 @@ namespace Mersad.Api.Migrations
                     b.HasIndex("DeviceId");
 
                     b.ToTable("ProcessEvents");
+                });
+
+            modelBuilder.Entity("Mersad.Api.Models.NetworkEvent", b =>
+                {
+                    b.HasOne("Mersad.Api.Models.Device", null)
+                        .WithMany()
+                        .HasForeignKey("DeviceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Mersad.Api.Models.ProcessEvent", b =>

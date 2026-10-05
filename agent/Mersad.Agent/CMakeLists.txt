@@ -12,8 +12,11 @@ add_executable(
     src/DeviceManager.cpp
     src/ProcessCollector.cpp
     src/TelemetryClient.cpp
+    src/NetworkCollector.cpp
     src/AgentIdentity.cpp
 )
+
+target_compile_definitions(Mersad.Agent PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX)
 
 target_include_directories(
     Mersad.Agent

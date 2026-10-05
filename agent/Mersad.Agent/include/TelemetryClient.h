@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include "NetworkCollector.h"
 #include "ProcessCollector.h"
 
 class HttpClient;
@@ -15,6 +16,10 @@ public:
     bool SendProcessBatch(
         const std::string& agentId,
         const std::vector<ProcessInfo>& processes);
+
+    bool SendNetworkBatch(
+        const std::string& agentId,
+        const std::vector<NetworkConnection>& connections);
 
 private:
     HttpClient& httpClient_;

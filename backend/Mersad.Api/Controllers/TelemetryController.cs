@@ -87,6 +87,42 @@ public class TelemetryController : ControllerBase
 
                 _db.ProcessEvents.Add(processEvent);
             }
+            else if (telemetryEvent.Type.Equals(
+                         "network",
+                         StringComparison.OrdinalIgnoreCase))
+            {
+                var data = JsonSerializer.Deserialize<NetworkTelemetryData>(
+                    JsonSerializer.Serialize(telemetryEvent.Data));
+
+                if (data is null ||
+                    data.ProcessId <= 0 ||
+                    string.IsNullOrWhiteSpace(data.LocalAddress) ||
+                    data.LocalPort < 0 ||
+                    data.LocalPort > 65535 ||
+                    string.IsNullOrWhiteSpace(data.RemoteAddress) ||
+                    data.RemotePort < 0 ||
+                    data.RemotePort > 65535 ||
+                    string.IsNullOrWhiteSpace(data.State))
+                {
+                    return BadRequest(
+                        "Invalid network telemetry.");
+                }
+
+                var networkEvent = new NetworkEvent
+                {
+                    Id = Guid.NewGuid(),
+                    DeviceId = device.Id,
+                    ProcessId = data.ProcessId,
+                    LocalAddress = data.LocalAddress,
+                    LocalPort = data.LocalPort,
+                    RemoteAddress = data.RemoteAddress,
+                    RemotePort = data.RemotePort,
+                    State = data.State,
+                    Timestamp = telemetryEvent.Timestamp
+                };
+
+                _db.NetworkEvents.Add(networkEvent);
+            }
             else
             {
                 return BadRequest(
