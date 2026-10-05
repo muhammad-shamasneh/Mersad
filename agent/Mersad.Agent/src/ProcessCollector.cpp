@@ -38,6 +38,12 @@ std::vector<ProcessInfo> ProcessCollector::Collect()
         ProcessInfo process;
 
         process.processId = processEntry.th32ProcessID;
+
+        if (process.processId == 0)
+        {
+            continue;
+        }
+
         process.processName = processEntry.szExeFile;
 
         processes.push_back(process);

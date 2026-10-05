@@ -65,8 +65,11 @@ public class TelemetryController : ControllerBase
                     "process",
                     StringComparison.OrdinalIgnoreCase))
             {
-                var data = JsonSerializer.Deserialize<ProcessTelemetryData>(
-                    JsonSerializer.Serialize(telemetryEvent.Data));
+                var data = telemetryEvent.Data.Deserialize<ProcessTelemetryData>(
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
 
                 if (data is null ||
                     data.ProcessId <= 0 ||
@@ -91,8 +94,11 @@ public class TelemetryController : ControllerBase
                          "network",
                          StringComparison.OrdinalIgnoreCase))
             {
-                var data = JsonSerializer.Deserialize<NetworkTelemetryData>(
-                    JsonSerializer.Serialize(telemetryEvent.Data));
+                var data = telemetryEvent.Data.Deserialize<NetworkTelemetryData>(
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
 
                 if (data is null ||
                     data.ProcessId <= 0 ||

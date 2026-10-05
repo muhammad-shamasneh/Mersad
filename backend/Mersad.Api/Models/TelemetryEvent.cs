@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace Mersad.Api.Models;
 
 public class TelemetryEvent
@@ -6,6 +8,5 @@ public class TelemetryEvent
 
     public DateTimeOffset Timestamp { get; set; }
 
-    public Dictionary<string, object> Data { get; set; }
-        = new();
+    public JsonElement Data { get; set; }
 }

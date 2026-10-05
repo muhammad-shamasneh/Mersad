@@ -60,6 +60,11 @@ std::vector<NetworkConnection> NetworkCollector::Collect()
         NetworkConnection connection{};
 
         connection.processId = row.dwOwningPid;
+        if (connection.processId == 0)
+        {
+            continue;
+        }
+
         connection.localPort = ntohs(
             static_cast<u_short>(row.dwLocalPort));
         connection.remotePort = ntohs(
