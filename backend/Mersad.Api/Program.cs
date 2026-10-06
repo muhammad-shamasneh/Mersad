@@ -1,5 +1,7 @@
 using Mersad.Api.Data;
 using Microsoft.EntityFrameworkCore;
+using Mersad.Api.Detection;
+using Mersad.Api.Detection.Rules;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +10,12 @@ builder.Services.AddDbContext<MersadDbContext>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+builder.Services.AddScoped<IDetectionRule, SuspiciousPowerShellRule>();
+builder.Services.AddScoped<IDetectionRule, SuspiciousNetworkPortRule>();
+builder.Services.AddScoped<IDetectionRule, PowerShellSuspiciousNetworkRule>();
+
+builder.Services.AddScoped<DetectionEngine>();
 
 var app = builder.Build();
 

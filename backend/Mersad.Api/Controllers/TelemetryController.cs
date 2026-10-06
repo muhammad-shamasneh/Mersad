@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Mersad.Api.Data;
 using Mersad.Api.Models;
+using Mersad.Api.Detection;
 
 namespace Mersad.Api.Controllers;
 
@@ -11,10 +12,14 @@ namespace Mersad.Api.Controllers;
 public class TelemetryController : ControllerBase
 {
     private readonly MersadDbContext _db;
+    private readonly DetectionEngine _detectionEngine;
 
-    public TelemetryController(MersadDbContext db)
+    public TelemetryController(
+        MersadDbContext db,
+        DetectionEngine detectionEngine)
     {
         _db = db;
+        _detectionEngine = detectionEngine;
     }
 
     [HttpPost]
@@ -40,6 +45,9 @@ public class TelemetryController : ControllerBase
         }
 
         var now = DateTimeOffset.UtcNow;
+
+        var processEvents = new List<ProcessEvent>();
+        var networkEvents = new List<NetworkEvent>();
 
         foreach (var telemetryEvent in request.Events)
         {
@@ -89,6 +97,7 @@ public class TelemetryController : ControllerBase
                 };
 
                 _db.ProcessEvents.Add(processEvent);
+                processEvents.Add(processEvent);
             }
             else if (telemetryEvent.Type.Equals(
                          "network",
@@ -128,6 +137,7 @@ public class TelemetryController : ControllerBase
                 };
 
                 _db.NetworkEvents.Add(networkEvent);
+                networkEvents.Add(networkEvent);
             }
             else
             {
@@ -139,6 +149,20 @@ public class TelemetryController : ControllerBase
         device.LastSeen = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
+
+        var detectionContext = new DetectionContext(
+            processEvents,
+            networkEvents);
+
+        var detections = _detectionEngine
+            .Evaluate(detectionContext)
+            .ToList();
+
+        foreach (var detection in detections)
+        {
+            Console.WriteLine(
+                $"Detection: {detection.RuleId} - {detection.Title}");
+        }
 
         return Ok(new
         {
