@@ -2,6 +2,7 @@ using Mersad.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Mersad.Api.Detection;
 using Mersad.Api.Detection.Rules;
+using Mersad.Api.Alerts;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,7 +15,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddScoped<IDetectionRule, SuspiciousPowerShellRule>();
 builder.Services.AddScoped<IDetectionRule, SuspiciousNetworkPortRule>();
 builder.Services.AddScoped<IDetectionRule, PowerShellSuspiciousNetworkRule>();
-
+builder.Services.AddScoped<AlertService>();
 builder.Services.AddScoped<DetectionEngine>();
 
 var app = builder.Build();

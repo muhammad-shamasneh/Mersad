@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Mersad.Api.Data;
 using Mersad.Api.Models;
 using Mersad.Api.Detection;
+using Mersad.Api.Alerts;
 
 namespace Mersad.Api.Controllers;
 
@@ -13,13 +14,16 @@ public class TelemetryController : ControllerBase
 {
     private readonly MersadDbContext _db;
     private readonly DetectionEngine _detectionEngine;
+    private readonly AlertService _alertService;
 
     public TelemetryController(
         MersadDbContext db,
-        DetectionEngine detectionEngine)
+        DetectionEngine detectionEngine,
+        AlertService alertService)
     {
         _db = db;
         _detectionEngine = detectionEngine;
+        _alertService = alertService;
     }
 
     [HttpPost]
@@ -163,6 +167,8 @@ public class TelemetryController : ControllerBase
             Console.WriteLine(
                 $"Detection: {detection.RuleId} - {detection.Title}");
         }
+
+        await _alertService.CreateAlertsAsync(detections);
 
         return Ok(new
         {

@@ -13,7 +13,8 @@ public class MersadDbContext : DbContext
     public DbSet<Device> Devices => Set<Device>();
     public DbSet<ProcessEvent> ProcessEvents => Set<ProcessEvent>();
     public DbSet<NetworkEvent> NetworkEvents => Set<NetworkEvent>();
-
+    public DbSet<Alert> Alerts => Set<Alert>();
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Device>()
