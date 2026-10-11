@@ -18,7 +18,20 @@ builder.Services.AddScoped<IDetectionRule, PowerShellSuspiciousNetworkRule>();
 builder.Services.AddScoped<AlertService>();
 builder.Services.AddScoped<DetectionEngine>();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Dashboard", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+app.UseCors("Dashboard");
 
 if (app.Environment.IsDevelopment())
 {
