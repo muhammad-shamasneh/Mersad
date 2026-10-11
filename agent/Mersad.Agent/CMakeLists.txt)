@@ -1,2 +1,0 @@
-add_executable(Mersad.Agent src/main.cpp)
-add_executable(Mersad.Agent src/main.cpp)
