@@ -1,122 +1,171 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useEffect, useState } from "react";
+import "./App.css";
+
+type Alert = {
+  id: string;
+  deviceId: string;
+  detectionRuleId: string;
+  title: string;
+  description: string;
+  severity: string;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+  processEventId: string | null;
+  networkEventId: string | null;
+};
+
+type ApiStatus = "connecting" | "connected" | "disconnected";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [apiStatus, setApiStatus] = useState<ApiStatus>("connecting");
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadAlerts = async () => {
+      try {
+        const response = await fetch("http://localhost:5121/api/alerts");
+
+        if (!response.ok) {
+          throw new Error(`API returned ${response.status}`);
+        }
+
+        const data: Alert[] = await response.json();
+
+        if (!Array.isArray(data)) {
+          throw new Error("API returned an invalid alerts response");
+        }
+
+        if (isActive) {
+          setAlerts(data);
+          setError(null);
+          setApiStatus("connected");
+          setLoading(false);
+        }
+      } catch (err: unknown) {
+        if (isActive) {
+          setError(
+            err instanceof Error ? err.message : "An unexpected error occurred",
+          );
+          setApiStatus("disconnected");
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadAlerts();
+
+    const intervalId = window.setInterval(() => {
+      void loadAlerts();
+    }, 5000);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const highSeverityCount = alerts.filter(
+    (alert) => alert.severity === "High",
+  ).length;
+
+  const newAlertCount = alerts.filter((alert) => alert.status === "New").length;
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
+    <div className="dashboard">
+      {" "}
+      <header className="header">
+        {" "}
         <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
+          {" "}
+          <h1>Mersad</h1> <p>Security Operations Dashboard</p>{" "}
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+        <div className="status">
+          <span className={`status-dot ${apiStatus}`} />
+          API{" "}
+          {apiStatus === "connecting"
+            ? "Connecting..."
+            : apiStatus === "connected"
+              ? "Connected"
+              : "Disconnected"}
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+      </header>
+      <main>
+        <section className="summary">
+          <div className="summary-card">
+            <span>Total Alerts</span>
+            <strong>{alerts.length}</strong>
+          </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          <div className="summary-card">
+            <span>High Severity</span>
+            <strong>{highSeverityCount}</strong>
+          </div>
+
+          <div className="summary-card">
+            <span>New</span>
+            <strong>{newAlertCount}</strong>
+          </div>
+        </section>
+
+        <section className="alerts-section">
+          <div className="section-header">
+            <div>
+              <h2>Alerts</h2>
+              <p>Latest security findings from monitored devices.</p>
+            </div>
+          </div>
+
+          {loading && <p className="message">Loading alerts...</p>}
+
+          {error && (
+            <p className="message error">
+              {apiStatus === "disconnected"
+                ? `Unable to refresh alerts: ${error}. Showing the last successfully loaded data, if available.`
+                : `Failed to load alerts: ${error}`}
+            </p>
+          )}
+
+          {!loading && !error && alerts.length === 0 && (
+            <p className="message">No alerts found.</p>
+          )}
+
+          <div className="alert-list">
+            {alerts.map((alert) => (
+              <article className="alert-card" key={alert.id}>
+                <div className="alert-main">
+                  <div className="alert-title-row">
+                    <span
+                      className={`severity ${alert.severity.toLowerCase()}`}
+                    >
+                      {alert.severity}
+                    </span>
+
+                    <span className="rule">{alert.detectionRuleId}</span>
+
+                    <span className="alert-status">{alert.status}</span>
+                  </div>
+
+                  <h3>{alert.title}</h3>
+                  <p>{alert.description}</p>
+
+                  <small>Device: {alert.deviceId}</small>
+                </div>
+
+                <time dateTime={alert.createdAt}>
+                  {new Date(alert.createdAt).toLocaleString()}
+                </time>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
