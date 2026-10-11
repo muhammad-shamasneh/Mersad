@@ -1,18 +1,35 @@
+
+using Mersad.Api.Configuration;
 using Mersad.Api.Models;
-using Mersad.Api.Detection.Policies;
+using Microsoft.Extensions.Options;
 
 namespace Mersad.Api.Detection.Rules;
 
 public class SuspiciousNetworkPortRule : IDetectionRule
 {
+    private readonly DetectionOptions _options;
+    private readonly HashSet<int> _suspiciousPorts;
+
+    public SuspiciousNetworkPortRule(
+        IOptions<DetectionOptions> options)
+    {
+        _options = options.Value;
+        _suspiciousPorts = _options.SuspiciousNetworkPorts.ToHashSet();
+    }
+
     public string RuleId => "NET-001";
 
     public IEnumerable<Detection> Evaluate(
         DetectionContext context)
     {
+        if (!_options.SuspiciousNetworkPortEnabled)
+        {
+            yield break;
+        }
+
         foreach (var networkEvent in context.NetworkEvents)
         {
-            if (!SuspiciousNetworkPorts.Contains(networkEvent.RemotePort))
+            if (!_suspiciousPorts.Contains(networkEvent.RemotePort))
             {
                 continue;
             }

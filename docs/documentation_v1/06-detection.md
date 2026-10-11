@@ -333,45 +333,51 @@ Severity: High
 
 ---
 
-# 9. Shared Suspicious Network Policy
+# 9. Configurable Detection Policy
 
-The suspicious ports are stored in one shared policy:
+Mersad's backend loads detection settings through the .NET configuration system and binds them to the `DetectionOptions` class.
 
-```text
-Detection/
-└── Policies/
-    └── SuspiciousNetworkPorts.cs
+**Configuration source:** `backend/Mersad.Api/appsettings.json`
+
+The `Detection` section defines three independent rule flags and the suspicious remote ports:
+
+```json
+"Detection": {
+  "SuspiciousPowerShellEnabled": true,
+  "SuspiciousNetworkPortEnabled": true,
+  "PowerShellSuspiciousNetworkEnabled": true,
+  "SuspiciousNetworkPorts": [
+    4444,
+    1337,
+    31337
+  ]
+}
 ```
 
-The policy provides a single source of truth.
+These values represent the current backend defaults. Environment-specific configuration can override settings through the .NET configuration providers when configured appropriately.
 
-```text
-SuspiciousNetworkPorts
-        │
-        ├── NET-001
-        │
-        └── CORR-001
-```
+## Configuration responsibilities
 
-This prevents different detection rules from maintaining independent copies of the same security policy.
+* `SuspiciousPowerShellEnabled` controls rule `PROC-001`.
+* `SuspiciousNetworkPortEnabled` controls rule `NET-001`.
+* `PowerShellSuspiciousNetworkEnabled` controls rule `CORR-001`.
+* `SuspiciousNetworkPorts` defines the remote ports matched by `NET-001` and `CORR-001`.
 
-For example, changing the policy from:
+The network rules use the same configured port list, avoiding separate hardcoded lists in each rule.
 
-```text
-4444
-1337
-31337
-```
+## Validation
 
-to:
+`DetectionOptions` validates that configured ports are within the valid TCP/UDP port-number range of 1–65535 and that the list contains no duplicates. The API validates these options at startup and fails to start if validation fails.
 
-```text
-4444
-1337
-5555
-```
+An empty port list is valid and means that no remote port matches this particular port-based policy.
 
-automatically affects every rule using that policy.
+## Current limitations
+
+* These settings currently configure backend detection behavior only.
+* Configuration changes are not dynamically reloaded by the detection rules; restart the API to apply changes.
+* The agent and dashboard do not yet share a complete centralized configuration system.
+* These port matches are heuristic signals, not proof of malicious activity.
+
 
 ### V1 design decision
 

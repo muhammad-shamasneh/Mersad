@@ -3,8 +3,18 @@ using Microsoft.EntityFrameworkCore;
 using Mersad.Api.Detection;
 using Mersad.Api.Detection.Rules;
 using Mersad.Api.Alerts;
+using Mersad.Api.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services
+    .AddOptions<DetectionOptions>()
+    .Bind(builder.Configuration.GetSection(
+        DetectionOptions.SectionName))
+    .Validate(
+        options => options.IsValid(),
+        "Detection configuration contains invalid or duplicate ports.")
+    .ValidateOnStart();
 
 builder.Services.AddDbContext<MersadDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MersadDb")));
