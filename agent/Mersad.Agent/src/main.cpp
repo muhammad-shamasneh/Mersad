@@ -1,8 +1,10 @@
+
 #include "DeviceManager.h"
 #include "HttpClient.h"
 #include "ProcessCollector.h"
 #include "TelemetryClient.h"
 #include "AgentIdentity.h"
+#include "NetworkCollector.h"
 
 #include <iostream>
 #include <string>
@@ -12,7 +14,7 @@
 
 std::string GetHostname()
 {
-    char hostname[MAX_COMPUTERNAME_LENGTH + 1];
+    char hostname[MAX_COMPUTERNAME_LENGTH + 1] = {};
     DWORD size = sizeof(hostname);
 
     if (GetComputerNameA(hostname, &size))
@@ -27,7 +29,7 @@ int main()
 {
     std::cout << "Mersad Agent started." << std::endl;
 
-    std::string hostname = GetHostname();
+    const std::string hostname = GetHostname();
 
     std::cout << "Hostname: "
               << hostname
@@ -35,7 +37,7 @@ int main()
 
     AgentIdentity identity;
 
-    std::string agentId = identity.GetOrCreate();
+    const std::string agentId = identity.GetOrCreate();
 
     if (agentId.empty())
     {
@@ -55,7 +57,7 @@ int main()
 
     DeviceManager deviceManager(httpClient);
 
-    std::string deviceId =
+    const std::string deviceId =
         deviceManager.RegisterDevice(
             agentId,
             hostname);
@@ -74,7 +76,7 @@ int main()
 
     ProcessCollector processCollector;
 
-    std::vector<ProcessInfo> processes =
+    const std::vector<ProcessInfo> processes =
         processCollector.Collect();
 
     std::cout << "Processes found: "
@@ -83,7 +85,7 @@ int main()
 
     NetworkCollector networkCollector;
 
-    std::vector<NetworkConnection> connections =
+    const std::vector<NetworkConnection> connections =
         networkCollector.Collect();
 
     std::cout << "Network connections found: "
@@ -92,13 +94,28 @@ int main()
 
     TelemetryClient telemetryClient(httpClient);
 
-    telemetryClient.SendProcessBatch(
-        agentId,
-        processes);
+    if (!telemetryClient.SendProcessBatch(
+            agentId,
+            processes))
+    {
+        std::cerr << "Process telemetry submission failed."
+                  << std::endl;
 
-    telemetryClient.SendNetworkBatch(
-        agentId,
-        connections);
+        return 1;
+    }
+
+    if (!telemetryClient.SendNetworkBatch(
+            agentId,
+            connections))
+    {
+        std::cerr << "Network telemetry submission failed."
+                  << std::endl;
+
+        return 1;
+    }
+
+    std::cout << "Telemetry submission completed successfully."
+              << std::endl;
 
     return 0;
 }

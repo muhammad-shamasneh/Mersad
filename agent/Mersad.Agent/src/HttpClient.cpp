@@ -1,3 +1,4 @@
+
 #include "HttpClient.h"
 
 #include <iostream>
@@ -104,13 +105,27 @@ bool HttpClient::Post(
 
     DWORD availableSize = 0;
 
-    while (WinHttpQueryDataAvailable(
-        request,
-        &availableSize) &&
-        availableSize > 0)
+    while (true)
     {
-        std::vector<char> buffer(availableSize);
+        if (!WinHttpQueryDataAvailable(
+                request,
+                &availableSize))
+        {
+            std::cerr << "WinHttpQueryDataAvailable failed: "
+                      << GetLastError() << std::endl;
 
+            WinHttpCloseHandle(request);
+            WinHttpCloseHandle(connection);
+            WinHttpCloseHandle(session);
+            return false;
+        }
+
+        if (availableSize == 0)
+        {
+            break;
+        }
+
+        std::vector<char> buffer(availableSize);
         DWORD bytesRead = 0;
 
         if (!WinHttpReadData(
@@ -131,9 +146,41 @@ bool HttpClient::Post(
         response.append(buffer.data(), bytesRead);
     }
 
+    DWORD statusCode = 0;
+    DWORD statusCodeSize = sizeof(statusCode);
+
+    if (!WinHttpQueryHeaders(
+            request,
+            WINHTTP_QUERY_STATUS_CODE |
+                WINHTTP_QUERY_FLAG_NUMBER,
+            WINHTTP_HEADER_NAME_BY_INDEX,
+            &statusCode,
+            &statusCodeSize,
+            WINHTTP_NO_HEADER_INDEX))
+    {
+        std::cerr << "Failed to read HTTP status code: "
+                  << GetLastError() << std::endl;
+
+        WinHttpCloseHandle(request);
+        WinHttpCloseHandle(connection);
+        WinHttpCloseHandle(session);
+        return false;
+    }
+
     WinHttpCloseHandle(request);
     WinHttpCloseHandle(connection);
     WinHttpCloseHandle(session);
+
+    if (statusCode < 200 || statusCode >= 300)
+    {
+        std::cerr << "HTTP request failed with status "
+                  << statusCode
+                  << ". Response: "
+                  << response
+                  << std::endl;
+
+        return false;
+    }
 
     return true;
 }
