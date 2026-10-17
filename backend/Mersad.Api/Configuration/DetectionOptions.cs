@@ -11,12 +11,7 @@ public sealed class DetectionOptions
 
     public bool PowerShellSuspiciousNetworkEnabled { get; set; } = true;
 
-    public List<int> SuspiciousNetworkPorts { get; set; } =
-    [
-        4444,
-        1337,
-        31337
-    ];
+    public List<int> SuspiciousNetworkPorts { get; set; } = [];
 
     public bool IsValid()
     {

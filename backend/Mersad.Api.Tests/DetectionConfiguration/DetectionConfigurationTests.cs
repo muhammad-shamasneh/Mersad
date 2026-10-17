@@ -1,5 +1,6 @@
 
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 using Mersad.Api.Configuration;
 using Mersad.Api.Detection;
 using Mersad.Api.Detection.Rules;
@@ -62,10 +63,42 @@ public class DetectionConfigurationTests
         Assert.True(options.SuspiciousPowerShellEnabled);
         Assert.True(options.SuspiciousNetworkPortEnabled);
         Assert.True(options.PowerShellSuspiciousNetworkEnabled);
+        Assert.Empty(options.SuspiciousNetworkPorts);
+    }
+
+
+    [Fact]
+    public void ConfigurationBinding_LoadsConfiguredDetectionOptions()
+    {
+        var settings = new Dictionary<string, string?>
+        {
+            ["Detection:SuspiciousPowerShellEnabled"] = "true",
+            ["Detection:SuspiciousNetworkPortEnabled"] = "true",
+            ["Detection:PowerShellSuspiciousNetworkEnabled"] = "false",
+            ["Detection:SuspiciousNetworkPorts:0"] = "4444",
+            ["Detection:SuspiciousNetworkPorts:1"] = "1337",
+            ["Detection:SuspiciousNetworkPorts:2"] = "31337"
+        };
+
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(settings)
+            .Build();
+
+        var options = new DetectionOptions();
+
+        configuration
+            .GetSection(DetectionOptions.SectionName)
+            .Bind(options);
+
+        Assert.True(options.IsValid());
+        Assert.True(options.SuspiciousPowerShellEnabled);
+        Assert.True(options.SuspiciousNetworkPortEnabled);
+        Assert.False(options.PowerShellSuspiciousNetworkEnabled);
         Assert.Equal(
             new[] { 4444, 1337, 31337 },
             options.SuspiciousNetworkPorts);
     }
+
 
     [Theory]
     [InlineData(0)]
@@ -196,7 +229,10 @@ public class DetectionConfigurationTests
         var network = Network(1337, processId: 42);
 
         var rule = new PowerShellSuspiciousNetworkRule(
-            Options(new DetectionOptions()));
+            Options(new DetectionOptions
+            {
+                SuspiciousNetworkPorts = [4444, 1337, 31337]
+            }));
 
         var detections = rule.Evaluate(
             new DetectionContext([process], [network])).ToList();
