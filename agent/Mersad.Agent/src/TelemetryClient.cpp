@@ -1,5 +1,7 @@
+
 #include "TelemetryClient.h"
 #include "HttpClient.h"
+#include "JsonUtils.h"
 
 #include <chrono>
 #include <ctime>
@@ -26,22 +28,19 @@ bool TelemetryClient::SendProcessBatch(
         std::chrono::system_clock::to_time_t(now);
 
     std::tm utcTime{};
-
     gmtime_s(&utcTime, &currentTime);
 
     std::ostringstream timestampStream;
-
     timestampStream << std::put_time(
         &utcTime,
         "%Y-%m-%dT%H:%M:%SZ");
 
-    const std::string timestamp =
-        timestampStream.str();
+    const std::string timestamp = timestampStream.str();
 
     std::ostringstream body;
 
     body << "{\"agentId\":\""
-         << agentId
+         << JsonUtils::EscapeString(agentId)
          << "\",\"events\":[";
 
     for (size_t i = 0; i < processes.size(); ++i)
@@ -63,7 +62,7 @@ bool TelemetryClient::SendProcessBatch(
              << process.processId
              << ","
              << "\"processName\":\""
-             << process.processName
+             << JsonUtils::EscapeString(process.processName)
              << "\"}"
              << "}";
     }
@@ -105,22 +104,19 @@ bool TelemetryClient::SendNetworkBatch(
         std::chrono::system_clock::to_time_t(now);
 
     std::tm utcTime{};
-
     gmtime_s(&utcTime, &currentTime);
 
     std::ostringstream timestampStream;
-
     timestampStream << std::put_time(
         &utcTime,
         "%Y-%m-%dT%H:%M:%SZ");
 
-    const std::string timestamp =
-        timestampStream.str();
+    const std::string timestamp = timestampStream.str();
 
     std::ostringstream body;
 
     body << "{\"agentId\":\""
-         << agentId
+         << JsonUtils::EscapeString(agentId)
          << "\",\"events\":[";
 
     for (size_t i = 0; i < connections.size(); ++i)
@@ -142,19 +138,19 @@ bool TelemetryClient::SendNetworkBatch(
              << connection.processId
              << ","
              << "\"localAddress\":\""
-             << connection.localAddress
+             << JsonUtils::EscapeString(connection.localAddress)
              << "\","
              << "\"localPort\":"
              << connection.localPort
              << ","
              << "\"remoteAddress\":\""
-             << connection.remoteAddress
+             << JsonUtils::EscapeString(connection.remoteAddress)
              << "\","
              << "\"remotePort\":"
              << connection.remotePort
              << ","
              << "\"state\":\""
-             << connection.state
+             << JsonUtils::EscapeString(connection.state)
              << "\"}"
              << "}";
     }

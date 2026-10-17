@@ -1,5 +1,7 @@
+
 #include "DeviceManager.h"
 #include "HttpClient.h"
+#include "JsonUtils.h"
 
 #include <iostream>
 
@@ -12,9 +14,9 @@ std::string DeviceManager::RegisterDevice(
     const std::string& agentId,
     const std::string& hostname)
 {
-    std::string body =
-        "{\"agentId\":\"" + agentId +
-        "\",\"hostname\":\"" + hostname +
+    const std::string body =
+        "{\"agentId\":\"" + JsonUtils::EscapeString(agentId) +
+        "\",\"hostname\":\"" + JsonUtils::EscapeString(hostname) +
         "\",\"os\":\"Windows\",\"osVersion\":\"11\"}";
 
     std::string response;
