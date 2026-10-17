@@ -381,11 +381,19 @@ An empty port list is valid and means that no remote port matches this particula
 
 ### V1 design decision
 
-The policy is currently defined in code.
+Detection settings are loaded through the .NET configuration system
+and bound to the typed `DetectionOptions` class.
 
-This is intentional for V1.
+The current defaults are stored in `backend/Mersad.Api/appsettings.json`.
+The API validates the options at startup. An empty suspicious-port list
+is valid and results in no matches for the port-based detection policy.
 
-In V2, configurable detection policies should move into the centralized configuration system so different customers can have different detection settings.
+This is backend configuration, not a shared configuration engine
+spanning the agent, backend, and dashboard. Dynamic configuration
+reload is not enabled, so restart the API after changing settings.
+
+A broader configuration system, including customer-specific policy
+management across components, remains future work.
 
 ---
 
@@ -670,8 +678,8 @@ The following capabilities are not part of the currently verified V1 implementat
 * Alert aggregation
 * Historical correlation across separate ingestion batches
 * Detection state and time-window management
-* Configurable rules
-* Customer-specific detection policies
+* Custom rule definitions and customer-specific policy management
+  through a dedicated configuration or management interface
 * Sigma rule support
 * Background detection workers
 * Detection queues
@@ -716,9 +724,13 @@ Typed Configuration
 Detection Rules
 ```
 
-This will eventually allow customer-specific detection policies without changing the agent or backend code.
+The current backend already uses typed configuration for detection
+settings. Future work should extend this foundation into a shared
+configuration system with clear validation, policy ownership, and
+customer-specific settings where appropriate.
 
-Historical correlation can also evolve from the current batch-only model into a time-window-based detection system.
+Historical correlation can also evolve from the current batch-only
+model into a time-window-based detection system.
 
 ---
 

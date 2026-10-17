@@ -198,10 +198,19 @@ The current backend registers these rules:
 | Rule ID    | Detection                                                         | Severity |
 | ---------- | ----------------------------------------------------------------- | -------- |
 | `PROC-001` | Suspicious PowerShell execution                                   | Medium   |
-| `NET-001`  | Network connection to a configured-in-code suspicious remote port | High     |
+| `NET-001`  | Network connection to a configured suspicious remote port | High     |
 | `CORR-001` | Correlated PowerShell execution and suspicious network activity   | High     |
 
-The current suspicious-port policy includes ports `4444`, `1337`, and `31337`. These values are currently defined in code rather than managed by a centralized configuration system.
+The suspicious-port policy is configured in
+`backend/Mersad.Api/appsettings.json` under the `Detection` section.
+The current configured ports are `4444`, `1337`, and `31337`.
+The three detection rules can also be enabled or disabled through
+configuration. Invalid or duplicate port values cause startup
+validation to fail. An empty port list is valid and disables
+port-based matches.
+
+These settings currently apply to backend detection only; Mersad
+does not yet have a shared configuration system spanning all components.
 
 These are demonstration detection rules, not a comprehensive threat-detection engine. A rule match is an alert-worthy signal, not proof that a device has been compromised.
 
@@ -238,7 +247,7 @@ Mersad is an early-stage project. Important limitations include:
 
 * The agent performs a one-shot collection cycle rather than continuous monitoring.
 * Detection is rule-based and limited to the currently implemented rules.
-* Suspicious-port settings are not yet centrally configurable.
+* Detection settings are configurable through backend configuration, but dynamic reload and a shared cross-component configuration system are not implemented.
 * Authentication, authorization, transport security, and production deployment hardening are incomplete.
 * The project does not yet provide a production-grade investigation workflow or implemented AI-generated alert explanations.
 * Telemetry collection, reliability, scalability, and error handling need further development and testing.
@@ -249,7 +258,7 @@ Do not deploy this version as a production endpoint detection and response (EDR)
 
 Planned development areas include:
 
-* A centralized configuration system for detection policies and other configurable behavior.
+* A shared configuration system spanning components, with clear ownership, validation, and customer-specific policy support.
 * More reliable and continuous endpoint monitoring.
 * Better telemetry validation, delivery handling, and diagnostics.
 * Richer alert investigation and dashboard workflows.
