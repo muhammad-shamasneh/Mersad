@@ -13,5 +13,7 @@ struct ProcessInfo
 class ProcessCollector
 {
 public:
-    std::vector<ProcessInfo> Collect();
+    // Returns true when enumeration completes successfully.
+    // An empty result is valid if enumeration succeeds with no entries.
+    bool Collect(std::vector<ProcessInfo>& processes);
 };

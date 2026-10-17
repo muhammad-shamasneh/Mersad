@@ -1,11 +1,13 @@
+
 #include "ProcessCollector.h"
 
 #include <iostream>
 #include <tlhelp32.h>
 
-std::vector<ProcessInfo> ProcessCollector::Collect()
+bool ProcessCollector::Collect(
+    std::vector<ProcessInfo>& processes)
 {
-    std::vector<ProcessInfo> processes;
+    processes.clear();
 
     HANDLE snapshot = CreateToolhelp32Snapshot(
         TH32CS_SNAPPROCESS,
@@ -17,40 +19,58 @@ std::vector<ProcessInfo> ProcessCollector::Collect()
                   << GetLastError()
                   << std::endl;
 
-        return processes;
+        return false;
     }
 
     PROCESSENTRY32 processEntry{};
-    processEntry.dwSize = sizeof(PROCESSENTRY32);
+    processEntry.dwSize = sizeof(processEntry);
 
     if (!Process32First(snapshot, &processEntry))
     {
-        std::cerr << "Process32First failed: "
-                  << GetLastError()
-                  << std::endl;
+        const DWORD error = GetLastError();
 
         CloseHandle(snapshot);
-        return processes;
+
+        if (error == ERROR_NO_MORE_FILES)
+        {
+            return true;
+        }
+
+        std::cerr << "Process32First failed: "
+                  << error
+                  << std::endl;
+
+        return false;
     }
 
     do
     {
-        ProcessInfo process;
-
-        process.processId = processEntry.th32ProcessID;
-
-        if (process.processId == 0)
+        if (processEntry.th32ProcessID == 0)
         {
             continue;
         }
 
+        ProcessInfo process{};
+        process.processId = processEntry.th32ProcessID;
         process.processName = processEntry.szExeFile;
 
-        processes.push_back(process);
+        processes.push_back(std::move(process));
 
     } while (Process32Next(snapshot, &processEntry));
 
+    const DWORD error = GetLastError();
+
     CloseHandle(snapshot);
 
-    return processes;
+    if (error != ERROR_NO_MORE_FILES)
+    {
+        std::cerr << "Process32Next failed: "
+                  << error
+                  << std::endl;
+
+        processes.clear();
+        return false;
+    }
+
+    return true;
 }

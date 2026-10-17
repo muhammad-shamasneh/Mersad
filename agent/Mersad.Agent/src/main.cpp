@@ -76,8 +76,15 @@ int main()
 
     ProcessCollector processCollector;
 
-    const std::vector<ProcessInfo> processes =
-        processCollector.Collect();
+    std::vector<ProcessInfo> processes;
+
+    if (!processCollector.Collect(processes))
+    {
+        std::cerr << "Process collection failed."
+                  << std::endl;
+
+        return 1;
+    }
 
     std::cout << "Processes found: "
               << processes.size()
