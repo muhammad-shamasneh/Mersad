@@ -1,3 +1,5 @@
+
+using Microsoft.EntityFrameworkCore;
 using Mersad.Api.Data;
 using Mersad.Api.Models;
 
@@ -15,9 +17,39 @@ public class AlertService
     public async Task CreateAlertsAsync(
         IEnumerable<Mersad.Api.Detection.Detection> detections)
     {
+        var processedKeys =
+            new HashSet<(string RuleId, Guid? ProcessEventId,
+                Guid? NetworkEventId)>();
+
         foreach (var detection in detections)
         {
-            var alert = new Alert
+            var key = (
+                detection.RuleId,
+                detection.ProcessEventId,
+                detection.NetworkEventId);
+
+            // Avoid duplicates within this evaluation batch.
+            if (!processedKeys.Add(key))
+            {
+                continue;
+            }
+
+            // Avoid recreating an alert for the same rule and event(s).
+            var alreadyExists = await _db.Alerts
+                .AsNoTracking()
+                .AnyAsync(alert =>
+                    alert.DetectionRuleId == detection.RuleId &&
+                    alert.ProcessEventId == detection.ProcessEventId &&
+                    alert.NetworkEventId == detection.NetworkEventId);
+
+            if (alreadyExists)
+            {
+                continue;
+            }
+
+            var now = DateTimeOffset.UtcNow;
+
+            _db.Alerts.Add(new Alert
             {
                 Id = Guid.NewGuid(),
                 DeviceId = detection.DeviceId,
@@ -26,15 +58,16 @@ public class AlertService
                 Description = detection.Description,
                 Severity = detection.Severity,
                 Status = "New",
-                CreatedAt = DateTimeOffset.UtcNow,
-                UpdatedAt = DateTimeOffset.UtcNow,
+                CreatedAt = now,
+                UpdatedAt = now,
                 ProcessEventId = detection.ProcessEventId,
                 NetworkEventId = detection.NetworkEventId
-            };
-
-            _db.Alerts.Add(alert);
+            });
         }
 
-        await _db.SaveChangesAsync();
+        if (_db.ChangeTracker.HasChanges())
+        {
+            await _db.SaveChangesAsync();
+        }
     }
 }

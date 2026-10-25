@@ -154,9 +154,34 @@ public class TelemetryController : ControllerBase
 
         await _db.SaveChangesAsync();
 
+
+        var correlationStart = now.AddMinutes(-5);
+        var correlationEnd = now.AddMinutes(5);
+
+        // Load events for this device so process and network telemetry
+        // from separate HTTP requests can be correlated.
+        var recentProcessEvents = (await _db.ProcessEvents
+            .AsNoTracking()
+            .Where(e => e.DeviceId == device.Id)
+            .ToListAsync())
+            .Where(e =>
+                e.Timestamp >= correlationStart &&
+                e.Timestamp <= correlationEnd)
+            .ToList();
+
+        var recentNetworkEvents = (await _db.NetworkEvents
+            .AsNoTracking()
+            .Where(e => e.DeviceId == device.Id)
+            .ToListAsync())
+            .Where(e =>
+                e.Timestamp >= correlationStart &&
+                e.Timestamp <= correlationEnd)
+            .ToList();
+
         var detectionContext = new DetectionContext(
-            processEvents,
-            networkEvents);
+            recentProcessEvents,
+            recentNetworkEvents);
+
 
         var detections = _detectionEngine
             .Evaluate(detectionContext)

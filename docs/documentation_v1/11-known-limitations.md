@@ -1,4 +1,4 @@
-﻿# Mersad V1 — Known Limitations
+# Mersad V1 — Known Limitations
 
 ## 1. Purpose
 
@@ -14,10 +14,11 @@ Detection currently relies on explicitly implemented rules. The current rules co
 
 The system does not currently provide general behavioral analytics or machine-learning-based detection.
 
-### Limited Correlation
+### Correlation and Scalability
 
-The PowerShell/network correlation rule evaluates events available in the current telemetry ingestion batch. Historical correlation across separate ingestion requests has not been verified.
+The PowerShell/network correlation rule can correlate recent persisted telemetry across separate ingestion requests. It requires matching device and process IDs, a configured suspicious remote port, and timestamps within five minutes.
 
+The current controller loads the device's events before filtering them by timestamp in application code. This approach can become expensive as telemetry grows and should be optimized before handling substantial event volumes.
 ### Fixed Detection Policy
 
 The suspicious network ports are defined by the current detection policy. A centralized, externally configurable detection configuration system is not yet verified as implemented.
@@ -28,19 +29,20 @@ The existing rules cover a narrow set of scenarios. They do not provide comprehe
 
 ## 3. Alert Management Limitations
 
-The API persists alerts and exposes them through the alerts endpoint. The dashboard displays these alerts and derives summary counts from the returned data.
+The API persists alerts and exposes them through the alerts endpoint. The dashboard displays alerts and derives summary counts from returned data.
 
-The following capabilities are not part of the verified V1 workflow:
+`AlertService` performs application-level deduplication by checking the detection rule ID and associated process/network event references. This reduces repeated alerts for the same evidence during ordinary sequential processing.
 
-- Alert deduplication and aggregation
+The check is not concurrency-safe: simultaneous requests may both observe that an alert does not exist and then insert duplicates. A database uniqueness constraint or equivalent protection has not been implemented for this guarantee.
+
+Other limitations include:
+
+- Alert aggregation and suppression
 - Alert assignment and ownership
 - Alert comments and investigation notes
 - A verified workflow for changing alert status
 - Case management and incident grouping
 - Historical investigation and timeline views
-
-Repeated matching telemetry may generate additional alerts because deduplication has not been implemented.
-
 ## 4. Dashboard Limitations
 
 The current dashboard provides basic alert presentation and API connectivity status.

@@ -14,14 +14,16 @@ public class DetectionConfigurationTests
         DetectionOptions options) =>
         Microsoft.Extensions.Options.Options.Create(options);
 
+
     private static ProcessEvent Process(
         string name,
-        int processId = 100)
+        int processId = 100,
+        Guid? deviceId = null)
     {
         return new ProcessEvent
         {
             Id = Guid.NewGuid(),
-            DeviceId = Guid.NewGuid(),
+            DeviceId = deviceId ?? Guid.NewGuid(),
             ProcessId = processId,
             ProcessName = name,
             Timestamp = DateTimeOffset.UtcNow
@@ -30,12 +32,13 @@ public class DetectionConfigurationTests
 
     private static NetworkEvent Network(
         int remotePort,
-        int processId = 100)
+        int processId = 100,
+        Guid? deviceId = null)
     {
         return new NetworkEvent
         {
             Id = Guid.NewGuid(),
-            DeviceId = Guid.NewGuid(),
+            DeviceId = deviceId ?? Guid.NewGuid(),
             ProcessId = processId,
             LocalAddress = "192.168.1.10",
             LocalPort = 50000,
@@ -45,6 +48,7 @@ public class DetectionConfigurationTests
             Timestamp = DateTimeOffset.UtcNow
         };
     }
+
 
     private static DetectionContext Context(
         params ProcessEvent[] processes) =>
@@ -225,8 +229,17 @@ public class DetectionConfigurationTests
     [Fact]
     public void CorrelationRule_DetectsPowerShellOnConfiguredPort()
     {
-        var process = Process("powershell.exe", processId: 42);
-        var network = Network(1337, processId: 42);
+        var deviceId = Guid.NewGuid();
+
+        var process = Process(
+            "powershell.exe",
+            processId: 42,
+            deviceId: deviceId);
+
+        var network = Network(
+            1337,
+            processId: 42,
+            deviceId: deviceId);
 
         var rule = new PowerShellSuspiciousNetworkRule(
             Options(new DetectionOptions
@@ -242,6 +255,33 @@ public class DetectionConfigurationTests
         Assert.Equal(process.Id, detection.ProcessEventId);
         Assert.Equal(network.Id, detection.NetworkEventId);
     }
+
+
+    [Fact]
+    public void CorrelationRule_IgnoresEventsFromDifferentDevices()
+    {
+        var options = Options(new DetectionOptions
+        {
+            PowerShellSuspiciousNetworkEnabled = true,
+            SuspiciousNetworkPorts = [4444, 1337, 31337]
+        });
+
+        var process = Process(
+            "powershell.exe",
+            processId: 42,
+            deviceId: Guid.NewGuid());
+
+        var network = Network(
+            1337,
+            processId: 42,
+            deviceId: Guid.NewGuid());
+
+        var rule = new PowerShellSuspiciousNetworkRule(options);
+        var context = new DetectionContext([process], [network]);
+
+        Assert.Empty(rule.Evaluate(context));
+    }
+
 
     [Fact]
     public void CorrelationRule_IgnoresDifferentProcessIds()

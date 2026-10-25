@@ -116,6 +116,22 @@ public sealed class AgentIntegrationTests : IDisposable
         Assert.Contains(alerts, alert =>
             alert.DetectionRuleId == "NET-001" &&
             alert.NetworkEventId == networkEvent.Id);
+        Assert.Contains(alerts, alert =>
+            alert.DetectionRuleId == "CORR-001" &&
+            alert.ProcessEventId == processEvent.Id &&
+            alert.NetworkEventId == networkEvent.Id);
+
+        Assert.Equal(
+            1,
+            alerts.Count(alert => alert.DetectionRuleId == "PROC-001"));
+
+        Assert.Equal(
+            1,
+            alerts.Count(alert => alert.DetectionRuleId == "NET-001"));
+
+        Assert.Equal(
+            1,
+            alerts.Count(alert => alert.DetectionRuleId == "CORR-001"));
     }
 
     [Fact]

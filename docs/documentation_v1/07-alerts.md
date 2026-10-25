@@ -216,30 +216,21 @@ This separation allows the detection engine to remain focused on security logic 
 
 ## 6. AlertService
 
-`AlertService` is responsible for converting detections into persistent `Alert` records.
+`AlertService` converts detections into persistent `Alert` records.
 
 The service:
 
 1. Receives detections from the detection engine.
-2. Creates an `Alert` for each detection.
-3. Copies the relevant detection information.
-4. Preserves references to the original telemetry.
-5. Persists the alerts to PostgreSQL.
+2. Skips duplicate detection keys within the current evaluation.
+3. Checks whether an alert already exists for the same rule and evidence references.
+4. Creates alerts only when a matching record is not found.
+5. Persists newly created alerts.
 
-Conceptually:
+The deduplication key consists of the detection rule ID, process event ID, and network event ID.
 
-```text
-Detection
-    ↓
-AlertService
-    ↓
-Alert
-    ↓
-PostgreSQL
-```
+This is application-level deduplication. Concurrent requests can still race between checking for an existing alert and inserting a new one. A database uniqueness constraint or equivalent concurrency-safe mechanism is needed for stronger guarantees.
 
-The service is registered through dependency injection and used by the telemetry controller.
-
+Detection runs synchronously as part of telemetry request processing; a background alert-processing queue is not currently implemented.
 ---
 
 ## 7. Current Detection-to-Alert Example
@@ -361,25 +352,17 @@ The dashboard will consume the `Alerts` data through an API in the next stage.
 
 ## 10. V1 Limitations
 
-The current implementation intentionally keeps the alert system simple.
+The current implementation provides alert persistence, an alerts API, and a dashboard alert feed. `AlertService` performs application-level deduplication using the detection rule ID and associated process/network event references.
 
-Not implemented yet:
+Remaining limitations include:
 
-* Alert API
-* Dashboard alert feed
-* Alert status update API
-* Alert deduplication
-* Alert grouping
-* Alert suppression
-* Alert ownership
-* Multi-user workflows
-* Authentication and authorization
-* Notification channels
-* Historical alert correlation
-* Background alert processing
+* Deduplication is not concurrency-safe; simultaneous requests can create duplicate alerts.
+* Alert grouping and suppression are not implemented.
+* Alert status update workflows and dashboard status controls are not implemented.
+* Alert ownership, comments, and multi-user workflows are not implemented.
+* Authentication, authorization, notification channels, and background alert processing are not verified as implemented.
 
-These are outside the initial V1 vertical slice.
-
+The deduplication check should not be treated as a database-enforced uniqueness guarantee.
 ---
 
 ## 11. Future Direction

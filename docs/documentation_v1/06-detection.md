@@ -1,4 +1,4 @@
-﻿# Mersad V1 — Detection
+# Mersad V1 — Detection
 
 ## 1. Purpose
 
@@ -574,43 +574,22 @@ Detection
 
 ---
 
-# 14. Current V1 Correlation Limitation
+# 14. Cross-Request Correlation
 
-`CORR-001` currently evaluates events contained in the **same ingestion batch**.
+`CORR-001` evaluates recent persisted process and network telemetry for the device being processed. This allows it to correlate events received in separate ingestion requests.
 
-For example:
+The rule requires:
+- The same device ID.
+- The same process ID.
+- A process named `powershell.exe`.
+- A network event whose remote port is configured as suspicious.
+- Event timestamps within five minutes of each other.
 
-### Batch A
+For example, a process event received in one request can be correlated with a matching network event received in a later request.
 
-```text
-ProcessEvent
-PID: 7000
-powershell.exe
-```
+The controller loads persisted events for the device and filters them to a time range around the current ingestion time. This is a simple V1 implementation, not a dedicated historical detection engine.
 
-### Batch B
-
-```text
-NetworkEvent
-PID: 7000
-RemotePort: 1337
-```
-
-The current V1 engine will not correlate these two events because they are evaluated in separate `DetectionContext` instances.
-
-Therefore:
-
-```text
-Batch A → no CORR-001
-Batch B → no CORR-001
-```
-
-even though the events could logically belong together.
-
-This is a known V1 limitation.
-
-A future detection architecture can support historical correlation by querying recent telemetry or maintaining a detection state/window.
-
+**Scalability limitation:** the current implementation loads the device's events before filtering by timestamp in application code. This can become expensive as telemetry grows. A future improvement should use efficient database-side time filtering and a more scalable correlation strategy.
 ---
 
 # 15. Dependency Injection
@@ -673,25 +652,18 @@ This gives Mersad a basic extensible detection architecture without introducing 
 
 The following capabilities are not part of the currently verified V1 implementation:
 
-* Alert status management
-* Alert deduplication
-* Alert aggregation
-* Historical correlation across separate ingestion batches
-* Detection state and time-window management
-* Custom rule definitions and customer-specific policy management
-  through a dedicated configuration or management interface
+* Alert aggregation and suppression
+* Configurable correlation windows and persisted detection state
+* Custom rule definitions and customer-specific policy management through a dedicated interface
 * Sigma rule support
-* Background detection workers
-* Detection queues
+* Background detection workers and queues
 * Advanced behavioral analytics
 * Machine-learning-based detection
 * Investigation workflows
 
-The current V1 implementation already includes detection rules, persistent alert storage, an alerts API, and a dashboard alert feed.
+The current implementation includes detection rules, cross-request correlation using recent persisted telemetry, persistent alert storage, an alerts API, and a dashboard alert feed.
 
 Future capabilities should be added incrementally based on product requirements rather than introducing unnecessary infrastructure during the MVP phase.
-
-
 ---
 
 # 18. Future Direction
