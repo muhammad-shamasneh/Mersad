@@ -212,7 +212,7 @@ port-based matches.
 These settings currently apply to backend detection only; Mersad
 does not yet have a shared configuration system spanning all components.
 
-`CORR-001` correlates recent persisted process and network events across ingestion requests when the device, process ID, suspicious remote port, and five-minute time window match. The current implementation loads device events before filtering by time, so correlation performance may degrade as telemetry grows.
+`CORR-001` correlates recent persisted process and network events across ingestion requests when the device, process ID, suspicious remote port, and five-minute time window match. Composite indexes on `(DeviceId, Timestamp)` support per-device telemetry lookups. For SQLite compatibility, the current implementation still filters timestamps in application code after loading that device's events, so correlation performance may degrade as telemetry grows.
 
 The alert service checks for existing alerts with the same rule and evidence references. This reduces duplicate alerts during sequential processing, but the check is not concurrency-safe and is not a database-enforced uniqueness guarantee.
 These are demonstration detection rules, not a comprehensive threat-detection engine. A rule match is an alert-worthy signal, not proof that a device has been compromised.

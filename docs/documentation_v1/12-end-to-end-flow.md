@@ -1,4 +1,4 @@
-﻿# Mersad V1 — End-to-End Data Flow
+# Mersad V1 — End-to-End Data Flow
 
 ## 1. Purpose
 
@@ -80,7 +80,7 @@ The verified rules cover:
 
 - Suspicious PowerShell execution (`PROC-001`)
 - Suspicious remote network ports (`NET-001`)
-- PowerShell activity correlated with suspicious network activity in the same ingestion batch (`CORR-001`)
+- PowerShell activity correlated with suspicious network activity across ingestion requests (`CORR-001`). The controller loads persisted events for the device and filters timestamps in application code to identify events within the five-minute correlation window.
 
 When a rule matches, it produces a detection containing information such as the rule ID, title, description, severity, and relevant event references.
 
@@ -94,7 +94,7 @@ The alert service creates persistent alert records and saves them to PostgreSQL.
 
 Each alert includes relevant detection information, device identity, event references when available, creation and update timestamps, and an initial status of `New`.
 
-Alert deduplication and aggregation are not implemented in the verified flow.
+Application-level alert deduplication is implemented using the detection rule and associated evidence-event references. It reduces duplicates during sequential processing but is not concurrency-safe. Alert aggregation and suppression are not implemented.
 
 ## 7. API Response
 
@@ -121,7 +121,7 @@ The current design is a development-stage MVP.
 The verified flow does not establish guarantees for:
 
 - Exactly-once alert creation
-- Deduplication during retries
+- Concurrency-safe deduplication during retries
 - Durable asynchronous processing
 - Automatic recovery of partially processed ingestion requests
 - High-volume ingestion performance

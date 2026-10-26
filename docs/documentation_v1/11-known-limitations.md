@@ -18,7 +18,7 @@ The system does not currently provide general behavioral analytics or machine-le
 
 The PowerShell/network correlation rule can correlate recent persisted telemetry across separate ingestion requests. It requires matching device and process IDs, a configured suspicious remote port, and timestamps within five minutes.
 
-The current controller loads the device's events before filtering them by timestamp in application code. This approach can become expensive as telemetry grows and should be optimized before handling substantial event volumes.
+The current controller loads events for the device and filters timestamps in application code for SQLite compatibility. Composite indexes on (DeviceId, Timestamp) support per-device lookups, but do not eliminate the in-memory time filtering. This can become expensive as telemetry grows; provider-compatible database-side time filtering remains future work.
 ### Fixed Detection Policy
 
 The suspicious network ports are defined by the current detection policy. A centralized, externally configurable detection configuration system is not yet verified as implemented.

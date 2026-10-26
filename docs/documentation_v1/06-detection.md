@@ -589,7 +589,7 @@ For example, a process event received in one request can be correlated with a ma
 
 The controller loads persisted events for the device and filters them to a time range around the current ingestion time. This is a simple V1 implementation, not a dedicated historical detection engine.
 
-**Scalability limitation:** the current implementation loads the device's events before filtering by timestamp in application code. This can become expensive as telemetry grows. A future improvement should use efficient database-side time filtering and a more scalable correlation strategy.
+**Scalability limitation:** the current implementation loads the device's events from the database, then filters by timestamp in application code for SQLite compatibility. Composite indexes on (DeviceId, Timestamp) support per-device telemetry lookups, but the timestamp window is not currently applied in SQL. This can become expensive as telemetry grows; efficient provider-compatible database-side time filtering remains future work.
 ---
 
 # 15. Dependency Injection

@@ -135,7 +135,7 @@ namespace Mersad.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeviceId");
+                    b.HasIndex("DeviceId", "Timestamp");
 
                     b.ToTable("NetworkEvents");
                 });
@@ -161,7 +161,7 @@ namespace Mersad.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeviceId");
+                    b.HasIndex("DeviceId", "Timestamp");
 
                     b.ToTable("ProcessEvents");
                 });
