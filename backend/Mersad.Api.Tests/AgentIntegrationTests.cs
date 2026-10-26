@@ -1,5 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Net.Http.Headers;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
@@ -22,10 +24,27 @@ public sealed class AgentIntegrationTests : IDisposable
     public AgentIntegrationTests()
     {
         _client = _factory.CreateClient();
+        _client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", "test-agent-key");
         using var scope = _factory.Services.CreateScope();
         scope.ServiceProvider
             .GetRequiredService<MersadDbContext>()
             .Database.EnsureCreated();
+    }
+
+    [Fact]
+    public async Task RequestsWithoutApiKey_AreRejected()
+    {
+        using var unauthenticatedClient = _factory.CreateClient();
+
+        var telemetryResponse = await unauthenticatedClient.PostAsJsonAsync(
+            "/api/telemetry",
+            new { agentId = Guid.NewGuid(), events = new[] { new { type = "process", timestamp = DateTimeOffset.UtcNow, data = new { processId = 1234, processName = "example.exe" } } } });
+
+        var alertsResponse = await unauthenticatedClient.GetAsync("/api/alerts");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, telemetryResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, alertsResponse.StatusCode);
     }
 
     [Fact]
@@ -217,6 +236,14 @@ public sealed class AgentIntegrationTests : IDisposable
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            builder.ConfigureAppConfiguration((_, configuration) =>
+                configuration.AddInMemoryCollection(
+                    new Dictionary<string, string?>
+                    {
+                        ["MersadSecurity:DashboardApiKey"] = "test-dashboard-key",
+                        ["MersadSecurity:AgentApiKey"] = "test-agent-key"
+                    }));
+
             builder.ConfigureServices(services =>
             {
                 services.PostConfigure<DetectionOptions>(options =>

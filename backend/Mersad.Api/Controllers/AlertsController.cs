@@ -1,4 +1,5 @@
 using Mersad.Api.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,7 @@ public class AlertsController : ControllerBase
         _db = db;
     }
 
+    [Authorize(Policy = "Dashboard")]
     [HttpGet]
     public async Task<IActionResult> GetAlerts()
     {

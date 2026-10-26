@@ -1,4 +1,4 @@
-﻿# Mersad V1 — Security Review
+# Mersad V1 — Security Review
 
 ## 1. Purpose
 
@@ -97,4 +97,10 @@ Mersad V1 has a local dashboard CORS policy, HTTPS redirection middleware, envir
 
 These are useful foundations, but they do not constitute a complete security boundary.
 
-V1 should be treated as a development-stage MVP until authentication, authorization, secret handling, transport security, and deployment hardening have been implemented and verified.
+V1 should be treated as a development-stage MVP. API-key authentication is implemented, but production-grade secret handling, transport security, deployment hardening, and a complete security assessment remain outstanding.
+
+## Implemented API key authentication
+
+The API uses separate configured Bearer API keys for dashboard and agent access. Dashboard policies protect read endpoints, while agent policies protect device registration and telemetry ingestion. Requests without valid credentials are rejected.
+
+Keys are supplied through environment-based configuration and must not be committed to source control. This is an MVP authentication mechanism, not a replacement for production identity management, user accounts, role administration, TLS configuration, or a full security assessment.

@@ -140,6 +140,16 @@ dotnet ef database update --project backend/Mersad.Api
 
 This creates or updates the schema defined by the project's migrations. Run this after starting PostgreSQL and before starting the API.
 
+### API key configuration
+
+The API requires two separate secrets:
+
+- `MersadSecurity__DashboardApiKey` — used by the dashboard.
+- `MersadSecurity__AgentApiKey` — used by the agent.
+
+Set both values in the environment of the API process before starting the backend. The dashboard must be configured with the dashboard key, and the agent uses `MERSAD_AGENT_API_KEY`.
+
+For local development, these can be set as Windows user environment variables. Restart the API after changing its keys. Never commit real keys to source control or place them in documentation.
 ### 3. Start the backend API
 
 ```powershell
@@ -251,7 +261,7 @@ Mersad is an early-stage project. Important limitations include:
 * The agent performs a one-shot collection cycle rather than continuous monitoring.
 * Detection is rule-based and limited to the currently implemented rules.
 * Detection settings are configurable through backend configuration, but dynamic reload and a shared cross-component configuration system are not implemented.
-* Authentication, authorization, transport security, and production deployment hardening are incomplete.
+* Dashboard and agent API endpoints use separate Bearer API keys. Production-grade identity management, transport security, and deployment hardening remain incomplete.
 * The project does not yet provide a production-grade investigation workflow or implemented AI-generated alert explanations.
 * Telemetry collection, reliability, scalability, and error handling need further development and testing.
 

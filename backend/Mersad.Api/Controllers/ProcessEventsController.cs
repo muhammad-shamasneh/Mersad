@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Mersad.Api.Data;
 using Mersad.Api.Models;
@@ -16,6 +17,7 @@ public class ProcessEventsController : ControllerBase
         _db = db;
     }
 
+    [Authorize(Policy = "Dashboard")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProcessEvent>>> GetEvents()
     {
@@ -24,6 +26,7 @@ public class ProcessEventsController : ControllerBase
             .ToListAsync();
     }
 
+    [Authorize(Policy = "Agent")]
     [HttpPost]
     public async Task<ActionResult<ProcessEvent>> CreateEvent(ProcessEvent processEvent)
     {

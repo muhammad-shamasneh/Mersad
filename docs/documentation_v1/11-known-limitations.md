@@ -67,7 +67,7 @@ The existing detection descriptions come from rule-based logic. AI-generated exp
 
 ## 6. Security and Deployment Limitations
 
-The inspected backend startup configuration does not show explicit authentication or authorization middleware.
+The backend enforces separate API-key authentication policies for dashboard and agent endpoints.
 
 The current CORS configuration is designed for the local dashboard. It is not a security boundary for direct API clients.
 

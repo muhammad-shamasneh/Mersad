@@ -7,6 +7,7 @@
 #include "NetworkCollector.h"
 
 #include <iostream>
+#include <cstdlib>
 #include <string>
 #include <vector>
 
@@ -51,9 +52,18 @@ int main()
               << agentId
               << std::endl;
 
+    const char* apiKey = std::getenv("MERSAD_AGENT_API_KEY");
+
+    if (apiKey == nullptr || *apiKey == '\0')
+    {
+        std::cerr << "MERSAD_AGENT_API_KEY is not set." << std::endl;
+        return 1;
+    }
+
     HttpClient httpClient(
         L"localhost",
-        5121);
+        5121,
+        apiKey);
 
     DeviceManager deviceManager(httpClient);
 

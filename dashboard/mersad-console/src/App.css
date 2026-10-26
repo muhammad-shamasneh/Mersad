@@ -210,3 +210,77 @@ main {
     flex-direction: column;
   }
 }
+
+.auth-panel {
+  max-width: 480px;
+  margin: 64px auto;
+  padding: 28px;
+  background: #111820;
+  border: 1px solid #202832;
+  border-radius: 8px;
+}
+
+.auth-panel h2 {
+  margin-top: 0;
+}
+
+.auth-panel > p {
+  color: #8b949e;
+}
+
+.auth-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.auth-panel label {
+  font-size: 14px;
+  color: #c9d1d9;
+}
+
+.auth-panel input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  color: #e6edf3;
+  background: #0b0f14;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+}
+
+.auth-panel button,
+.secondary-button {
+  padding: 10px 14px;
+  color: #ffffff;
+  background: #176b46;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.auth-panel button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.dashboard-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  color: #8b949e;
+  font-size: 14px;
+}
+
+.secondary-button {
+  background: #30363d;
+}
+
+@media (max-width: 800px) {
+  .auth-panel {
+    margin: 24px auto;
+  }
+}

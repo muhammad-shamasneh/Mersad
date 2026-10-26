@@ -1,16 +1,17 @@
-using Mersad.Api.Data;
-using Microsoft.EntityFrameworkCore;
+﻿using Mersad.Api.Data;
 using Mersad.Api.Detection;
 using Mersad.Api.Detection.Rules;
 using Mersad.Api.Alerts;
 using Mersad.Api.Configuration;
+using Mersad.Api.Security;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
     .AddOptions<DetectionOptions>()
-    .Bind(builder.Configuration.GetSection(
-        DetectionOptions.SectionName))
+    .Bind(builder.Configuration.GetSection(DetectionOptions.SectionName))
     .Validate(
         options => options.IsValid(),
         "Detection configuration contains invalid or duplicate ports.")
@@ -21,6 +22,30 @@ builder.Services.AddDbContext<MersadDbContext>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+
+builder.Services
+    .AddAuthentication()
+    .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+        "DashboardKey", _ => { })
+    .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+        "AgentKey", _ => { });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Dashboard", policy =>
+    {
+        policy.AddAuthenticationSchemes("DashboardKey");
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Dashboard");
+    });
+
+    options.AddPolicy("Agent", policy =>
+    {
+        policy.AddAuthenticationSchemes("AgentKey");
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Agent");
+    });
+});
 
 builder.Services.AddScoped<IDetectionRule, SuspiciousPowerShellRule>();
 builder.Services.AddScoped<IDetectionRule, SuspiciousNetworkPortRule>();
@@ -49,6 +74,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();

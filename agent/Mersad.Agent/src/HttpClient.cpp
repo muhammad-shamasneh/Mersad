@@ -8,9 +8,11 @@
 
 HttpClient::HttpClient(
     const std::wstring& host,
-    INTERNET_PORT port)
+    INTERNET_PORT port,
+    const std::string& apiKey)
     : host_(host),
-      port_(port)
+      port_(port),
+      apiKey_(apiKey)
 {
 }
 
@@ -67,13 +69,23 @@ bool HttpClient::Post(
         return false;
     }
 
-    const wchar_t* headers =
-        L"Content-Type: application/json";
+    if (apiKey_.empty())
+    {
+        std::cerr << "Agent API key is not configured." << std::endl;
+        WinHttpCloseHandle(request);
+        WinHttpCloseHandle(connection);
+        WinHttpCloseHandle(session);
+        return false;
+    }
+
+    std::wstring headers =
+        L"Content-Type: application/json\r\nAuthorization: Bearer ";
+    headers.append(apiKey_.begin(), apiKey_.end());
 
     BOOL result = WinHttpSendRequest(
         request,
-        headers,
-        -1L,
+        headers.c_str(),
+        static_cast<DWORD>(headers.length()),
         (LPVOID)body.c_str(),
         static_cast<DWORD>(body.size()),
         static_cast<DWORD>(body.size()),

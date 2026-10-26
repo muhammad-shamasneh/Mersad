@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Mersad.Api.Data;
 using Mersad.Api.Models;
 using Microsoft.EntityFrameworkCore;
@@ -16,12 +17,14 @@ public class DevicesController : ControllerBase
         _db = db;
     }
 
+    [Authorize(Policy = "Dashboard")]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<Device>>> GetDevices()
     {
         return await _db.Devices.OrderByDescending(d => d.LastSeen).ToListAsync();
     }
 
+    [Authorize(Policy = "Agent")]
     [HttpPost]
     public async Task<ActionResult<Device>> RegisterDevice(Device device)
     {
@@ -52,6 +55,7 @@ public class DevicesController : ControllerBase
             device);
     }
 
+    [Authorize(Policy = "Dashboard")]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<Device>> GetDevice(Guid id)
     {

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Mersad.Api.Data;
@@ -26,6 +27,7 @@ public class TelemetryController : ControllerBase
         _alertService = alertService;
     }
 
+    [Authorize(Policy = "Agent")]
     [HttpPost]
     public async Task<IActionResult> Ingest(
         TelemetryRequest request)
