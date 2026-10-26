@@ -288,3 +288,17 @@ When contributing, keep the documentation aligned with behavior that is actually
 ## Security notice
 
 Mersad is an evolving security engineering project intended for authorized development and testing. It is not currently a substitute for a supported commercial security product.
+
+## Windows local demo launcher
+
+Requirements: Docker Desktop, the .NET SDK, the Entity Framework CLI, Node.js/npm, and the Mersad API key environment variables configured for your Windows user.
+
+Start the local demo from PowerShell:
+
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Mersad\scripts\Start-Mersad.ps1"
+
+Stop the API and dashboard:
+
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "C:\Mersad\scripts\Stop-Mersad.ps1"
+
+The launcher writes logs to %LOCALAPPDATA%\Mersad\logs. Stopping the demo leaves PostgreSQL and its data intact. This is a local development demo, not a production deployment.
